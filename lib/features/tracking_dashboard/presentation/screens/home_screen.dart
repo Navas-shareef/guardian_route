@@ -1,7 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:guardian_route/core/services/location_permission_service.dart';
+import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/location_bloc.dart';
+import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/location_event.dart';
+import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/location_state.dart';
 import 'package:guardian_route/routes/app_router.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,7 +23,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    // Call after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _requestPermission();
     });
@@ -59,59 +62,72 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isTracking = false; // toggle manually for UI preview
-
     return Scaffold(
       appBar: AppBar(title: const Text("Guardian Route"), centerTitle: true),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isTracking ? Icons.location_on : Icons.location_off,
-              size: 90,
-              color: isTracking ? Colors.green : Colors.red,
-            ),
-            const SizedBox(height: 20),
-            Text(
-              isTracking ? "Tracking Active" : "Tracking Stopped",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: isTracking ? Colors.green : Colors.red,
-              ),
-            ),
-            const SizedBox(height: 50),
+      body: BlocBuilder<LocationBloc, LocationState>(
+        builder: (context, state) {
+          bool isTracking = state is TrackingStarted;
 
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isTracking ? Colors.red : Colors.green,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+          return Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isTracking ? Icons.location_on : Icons.location_off,
+                  size: 90,
+                  color: isTracking ? Colors.green : Colors.red,
+                ),
+
+                const SizedBox(height: 20),
+
+                Text(
+                  isTracking ? "Tracking Active" : "Tracking Stopped",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: isTracking ? Colors.green : Colors.red,
                   ),
                 ),
-                child: Text(
-                  isTracking ? "Stop Tracking" : "Start Tracking",
-                  style: const TextStyle(fontSize: 18),
+
+                const SizedBox(height: 50),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (isTracking) {
+                        context.read<LocationBloc>().add(StopTrackingEvent());
+                      } else {
+                        context.read<LocationBloc>().add(StartTrackingEvent());
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isTracking ? Colors.red : Colors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      isTracking ? "Stop Tracking" : "Start Tracking",
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-            OutlinedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, AppRouter.history);
-              },
-              child: const Text("View History"),
+                OutlinedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppRouter.history);
+                  },
+                  child: const Text("View History"),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
