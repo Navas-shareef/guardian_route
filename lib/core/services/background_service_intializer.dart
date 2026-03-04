@@ -58,6 +58,11 @@ class LocationBackgroundService {
 
       debugPrint("Latitude: ${position.latitude}");
       debugPrint("Longitude: ${position.longitude}");
+      service.invoke("locationUpdated", {
+        "lat": position.latitude,
+        "lng": position.longitude,
+        "time": DateTime.now().toIso8601String(),
+      });
 
       // TODO: Save location in DB
     });
