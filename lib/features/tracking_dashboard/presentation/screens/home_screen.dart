@@ -1,8 +1,61 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:guardian_route/core/services/location_permission_service.dart';
 import 'package:guardian_route/routes/app_router.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final LocationPermissionService _permissionService =
+      LocationPermissionService();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Call after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _requestPermission();
+    });
+  }
+
+  Future<void> _requestPermission() async {
+    final result = await _permissionService.requestPermission();
+
+    switch (result) {
+      case LocationPermissionResult.granted:
+        break;
+
+      case LocationPermissionResult.serviceDisabled:
+        _showMessage("Please enable GPS");
+        break;
+
+      case LocationPermissionResult.denied:
+        _showMessage("Location permission denied");
+        await Future.delayed(Duration(seconds: 1));
+        exit(0);
+
+      case LocationPermissionResult.deniedForever:
+        _showMessage("Permission permanently denied. Open settings.");
+        await Future.delayed(Duration(seconds: 1));
+        exit(0);
+
+      case LocationPermissionResult.backgroundDenied:
+        break;
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
 
   @override
   Widget build(BuildContext context) {

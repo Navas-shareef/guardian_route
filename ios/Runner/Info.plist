@@ -6,6 +6,16 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Guardian Route</string>
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app requires location access.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app tracks location in background.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+  	<string>location</string>
+	</array>
+
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
