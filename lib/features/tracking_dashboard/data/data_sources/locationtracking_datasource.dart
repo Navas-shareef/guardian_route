@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:guardian_route/features/tracking_dashboard/data/models/location_model.dart';
 
@@ -7,7 +8,6 @@ abstract class LocationTrackingDataSource {
   Future<void> stopTracking();
   Stream<bool> trackingStatusStream();
   Future<bool> isTrackingActive();
-  Stream<LocationModel> locationStream();
   void dispose();
 }
 
@@ -73,11 +73,6 @@ class LocationTrackingDataSourceImpl implements LocationTrackingDataSource {
   @override
   Future<bool> isTrackingActive() async {
     return await _service.isRunning();
-  }
-
-  @override
-  Stream<LocationModel> locationStream() {
-    return _locationController.stream;
   }
 
   @override

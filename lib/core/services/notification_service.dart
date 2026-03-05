@@ -58,8 +58,6 @@ class NotificationService {
       priority: Priority.low,
       ongoing: true,
       autoCancel: false,
-
-      actions: [AndroidNotificationAction('STOP_TRACKING', 'Stop Tracking')],
     );
 
     const iosDetails = DarwinNotificationDetails(
@@ -80,6 +78,11 @@ class NotificationService {
           : "Lat: $lat , Lng: $lng",
       notificationDetails: notificationDetails,
     );
+  }
+
+  @pragma('vm:entry-point')
+  static Future<void> removeTrackingNotification() async {
+    await _notifications.cancel(id: 1);
   }
 
   @pragma('vm:entry-point')

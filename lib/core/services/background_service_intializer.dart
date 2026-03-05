@@ -47,12 +47,12 @@ class LocationBackgroundService {
 
     service.on("stopService").listen((event) async {
       service.invoke("serviceStopped");
-      await Future.delayed(const Duration(milliseconds: 200));
       debugPrint("Background service stopped");
+      NotificationService.removeTrackingNotification();
       service.stopSelf();
     });
 
-    Timer.periodic(const Duration(seconds: 2), (timer) async {
+    Timer.periodic(const Duration(seconds: 5), (timer) async {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
       if (!serviceEnabled) return;
