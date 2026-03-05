@@ -38,26 +38,29 @@ class LocationBackgroundService {
     await IsarService.init();
     await NotificationService.initialize();
     debugPrint("Background service started");
-    await NotificationService.updateTrackingNotification(
-      0,
-      0,
-      isFirstNotification: true,
-    );
     service.invoke("serviceReady");
-
     service.on("stopService").listen((event) async {
       service.invoke("serviceStopped");
       debugPrint("Background service stopped");
       NotificationService.removeTrackingNotification();
       service.stopSelf();
     });
-
-    Timer.periodic(const Duration(seconds: 5), (timer) async {
+    final localDataSource = LocationLocalDataSourceImpl();
+    Timer.periodic(const Duration(minutes: 1), (timer) async {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
-      if (!serviceEnabled) return;
+      if (!serviceEnabled) {
+        await localDataSource.saveGpsDisabled();
+        return;
+      }
 
       LocationPermission permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        await localDataSource.savePermissionDenied();
+        return;
+      }
       debugPrint('$permission');
 
       if (permission == LocationPermission.denied) return;
@@ -71,18 +74,23 @@ class LocationBackgroundService {
         "lng": position.longitude,
         "time": DateTime.now().toIso8601String(),
       });
-      //  await IsarService.saveLocation(position.latitude, position.longitude);
+
       debugPrint("Latitude: ${position.latitude}");
       debugPrint("Longitude: ${position.longitude}");
 
-      final localDataSource = LocationLocalDataSourceImpl();
-      await localDataSource.saveLocation(position.latitude, position.longitude);
+      await localDataSource.saveLocation(position);
 
-      await NotificationService.updateTrackingNotification(
-        position.latitude,
-        position.longitude,
-        isFirstNotification: false,
-      );
+      if (service is AndroidServiceInstance) {
+        service.setForegroundNotificationInfo(
+          title: "Guardian Route Tracking",
+          content: "Lat: ${position.latitude}, Lng: ${position.longitude}",
+        );
+      } else {
+        await NotificationService.updateTrackingNotification(
+          position.latitude,
+          position.longitude,
+        );
+      }
     });
   }
 

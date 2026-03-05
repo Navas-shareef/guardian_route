@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/history_bloc/history_bloc.dart';
 import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/history_bloc/history_event.dart';
 import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/history_bloc/history_state.dart';
+import 'package:guardian_route/features/tracking_dashboard/presentation/widgets/error_location_card.dart';
 import 'package:guardian_route/features/tracking_dashboard/presentation/widgets/location_card.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -17,7 +18,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void initState() {
     super.initState();
 
-    /// Start watching Isar changes
     context.read<HistoryBloc>().add(LoadHistoryEvent());
   }
 
@@ -38,6 +38,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
               itemBuilder: (context, index) {
                 final location = state.locations[index];
 
+                if (location.status != "success") {
+                  return ErrorLocationCard(location: location);
+                }
                 return LocationCard(
                   location: location,
                   onNavigate: () {

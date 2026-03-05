@@ -57,12 +57,6 @@ class LocationCard extends StatelessWidget {
                 ],
               ),
             ),
-
-            if (hasLocation)
-              IconButton(
-                icon: const Icon(Icons.navigation),
-                onPressed: onNavigate,
-              ),
           ],
         ),
       ),

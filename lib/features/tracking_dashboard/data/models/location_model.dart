@@ -1,3 +1,4 @@
+import 'package:geolocator/geolocator.dart';
 import 'package:isar/isar.dart';
 import '../../domain/entities/location_entity.dart';
 
@@ -21,12 +22,12 @@ class LocationModel extends LocationEntity {
          timestamp: timestamp,
        );
 
-  factory LocationModel.fromPosition(position) {
+  factory LocationModel.fromPosition(Position position) {
     return LocationModel(
       latitude: position.latitude,
       longitude: position.longitude,
       status: "success",
-      timestamp: DateTime.now(),
+      timestamp: position.timestamp,
     );
   }
 
