@@ -2,8 +2,10 @@ import 'package:guardian_route/features/tracking_dashboard/data/models/location_
 
 abstract class HistoryEvent {}
 
-class LocationReceivedEvent extends HistoryEvent {
-  final LocationModel location;
+class LoadHistoryEvent extends HistoryEvent {}
 
-  LocationReceivedEvent(this.location);
+class LocationReceivedEvent extends HistoryEvent {
+  final List<LocationModel> locations;
+
+  LocationReceivedEvent(this.locations);
 }

@@ -8,6 +8,7 @@ import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/loc
 import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/location_tracking_bloc/location_event.dart';
 import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/location_tracking_bloc/location_state.dart';
 import 'package:guardian_route/routes/app_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,17 +17,41 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final LocationPermissionService _permissionService =
       LocationPermissionService();
 
   @override
   void initState() {
     super.initState();
-
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _requestPermission();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkPermissionAfterSettings();
+    }
+  }
+
+  Future<void> _checkPermissionAfterSettings() async {
+    final result = await _permissionService.requestPermission();
+
+    if (result == LocationPermissionResult.granted) {
+      _showMessage("Location permission granted");
+    } else if (result == LocationPermissionResult.deniedForever) {
+      _showMessage("Please enable permission from settings");
+      exit(0);
+    }
   }
 
   Future<void> _requestPermission() async {
@@ -46,13 +71,40 @@ class _HomeScreenState extends State<HomeScreen> {
         exit(0);
 
       case LocationPermissionResult.deniedForever:
-        _showMessage("Permission permanently denied. Open settings.");
-        await Future.delayed(Duration(seconds: 1));
-        exit(0);
-
+        _showPermissionDialog();
+        break;
       case LocationPermissionResult.backgroundDenied:
         break;
     }
+  }
+
+  void _showPermissionDialog() {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Location Permission Required"),
+        content: const Text(
+          "Location access is permanently denied. Please enable it from app settings to use tracking.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              exit(0);
+            },
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _permissionService.openSettings();
+            },
+            child: const Text("Open Settings"),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showMessage(String message) {

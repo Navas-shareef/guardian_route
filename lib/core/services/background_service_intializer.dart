@@ -4,7 +4,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:guardian_route/core/db/isar_service.dart' show IsarService;
 import 'package:guardian_route/core/services/notification_service.dart';
+import 'package:guardian_route/features/tracking_dashboard/data/data_sources/location_db_datasource.dart';
 
 class BackgroundServiceInitializer {
   static Future<void> initialize() async {
@@ -33,8 +35,7 @@ class LocationBackgroundService {
   @pragma('vm:entry-point')
   static void onStart(ServiceInstance service) async {
     DartPluginRegistrant.ensureInitialized();
-    await NotificationService.initialize();
-
+    await IsarService.init();
     debugPrint("Background service started");
     await NotificationService.updateTrackingNotification(
       0,
@@ -64,20 +65,23 @@ class LocationBackgroundService {
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      debugPrint("Latitude: ${position.latitude}");
-      debugPrint("Longitude: ${position.longitude}");
       service.invoke("locationUpdated", {
         "lat": position.latitude,
         "lng": position.longitude,
         "time": DateTime.now().toIso8601String(),
       });
+      //  await IsarService.saveLocation(position.latitude, position.longitude);
+      debugPrint("Latitude: ${position.latitude}");
+      debugPrint("Longitude: ${position.longitude}");
+
+      final localDataSource = LocationLocalDataSourceImpl();
+      await localDataSource.saveLocation(position.latitude, position.longitude);
 
       await NotificationService.updateTrackingNotification(
         position.latitude,
         position.longitude,
         isFirstNotification: false,
       );
-      // TODO: Save location in DB
     });
   }
 

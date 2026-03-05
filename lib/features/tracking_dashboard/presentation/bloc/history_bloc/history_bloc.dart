@@ -1,27 +1,41 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:guardian_route/core/db/isar_service.dart';
 import 'package:guardian_route/features/tracking_dashboard/data/models/location_model.dart';
-import 'package:guardian_route/features/tracking_dashboard/domain/usecases/location_update_stream.dart';
-import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/history_bloc/history_event.dart';
-import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/history_bloc/history_state.dart';
+import 'package:isar/isar.dart';
+import 'history_event.dart';
+import 'history_state.dart';
 
 class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
-  final LocationUpdatesStream locationUpdatesStream;
-
-  StreamSubscription? _locationSubscription;
+  StreamSubscription<List<LocationModel>>? _locationSubscription;
 
   final List<LocationModel> _history = [];
 
-  HistoryBloc(this.locationUpdatesStream) : super(HistoryInitial()) {
-    _locationSubscription = locationUpdatesStream().listen((location) {
-      add(LocationReceivedEvent(location));
-    });
+  HistoryBloc() : super(HistoryInitial()) {
+    on<LoadHistoryEvent>(_onLoadHistory);
 
     on<LocationReceivedEvent>((event, emit) {
-      _history.add(event.location);
+      _history
+        ..clear()
+        ..addAll(event.locations);
 
       emit(HistoryLoaded(List.from(_history)));
     });
+  }
+
+  Future<void> _onLoadHistory(
+    LoadHistoryEvent event,
+    Emitter<HistoryState> emit,
+  ) async {
+    _locationSubscription?.cancel();
+
+    _locationSubscription = IsarService.isar.locationModels
+        .where()
+        .sortByTimestampDesc()
+        .watch(fireImmediately: true)
+        .listen((locations) {
+          add(LocationReceivedEvent(locations));
+        });
   }
 
   @override

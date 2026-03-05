@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:guardian_route/core/db/isar_service.dart';
 import 'package:guardian_route/core/services/background_service_intializer.dart';
 import 'package:guardian_route/core/services/notification_service.dart';
 import 'package:guardian_route/core/theme/app_theme.dart';
+import 'package:guardian_route/features/tracking_dashboard/data/data_sources/location_db_datasource.dart';
 import 'package:guardian_route/features/tracking_dashboard/data/data_sources/locationtracking_datasource.dart';
 import 'package:guardian_route/features/tracking_dashboard/data/repositories/location_repo_imp.dart';
 import 'package:guardian_route/features/tracking_dashboard/domain/usecases/check_tracking_status.dart';
-import 'package:guardian_route/features/tracking_dashboard/domain/usecases/location_update_stream.dart';
 import 'package:guardian_route/features/tracking_dashboard/domain/usecases/start_tracking.dart';
 import 'package:guardian_route/features/tracking_dashboard/domain/usecases/stop_tracking.dart';
 import 'package:guardian_route/features/tracking_dashboard/domain/usecases/tracking_status_stream.dart';
@@ -17,11 +18,15 @@ import 'package:guardian_route/routes/app_router.dart';
 
 /// Create single instances
 final dataSource = LocationTrackingDataSourceImpl();
-final repository = LocationRepositoryImpl(locationTrackingService: dataSource);
+final localDataSource = LocationLocalDataSourceImpl();
+final repository = LocationRepositoryImpl(
+  locationTrackingService: dataSource,
+  localDataSource: localDataSource,
+);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await IsarService.init();
   await BackgroundServiceInitializer.initialize();
   await NotificationService.initialize();
 
@@ -44,10 +49,7 @@ class MyApp extends StatelessWidget {
           )..add(CheckTrackingStatusEvent()),
         ),
 
-        BlocProvider(
-          create: (_) => HistoryBloc(LocationUpdatesStream(repository)),
-          lazy: false,
-        ),
+        BlocProvider(create: (_) => HistoryBloc(), lazy: false),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

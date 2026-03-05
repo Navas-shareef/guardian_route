@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/history_bloc/history_bloc.dart';
+import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/history_bloc/history_event.dart';
 import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/history_bloc/history_state.dart';
 import 'package:guardian_route/features/tracking_dashboard/presentation/widgets/location_card.dart';
 
-class HistoryScreen extends StatelessWidget {
+class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
+
+  @override
+  State<HistoryScreen> createState() => _HistoryScreenState();
+}
+
+class _HistoryScreenState extends State<HistoryScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    /// Start watching Isar changes
+    context.read<HistoryBloc>().add(LoadHistoryEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,14 +29,27 @@ class HistoryScreen extends StatelessWidget {
       body: BlocBuilder<HistoryBloc, HistoryState>(
         builder: (context, state) {
           if (state is HistoryLoaded) {
-            return ListView.builder(
-              itemCount: state.history.length,
-              itemBuilder: (context, index) {
-                final location = state.history[index];
+            if (state.locations.isEmpty) {
+              return const Center(child: Text("No history yet"));
+            }
 
-                return LocationCard(location: location, onNavigate: () {});
+            return ListView.builder(
+              itemCount: state.locations.length,
+              itemBuilder: (context, index) {
+                final location = state.locations[index];
+
+                return LocationCard(
+                  location: location,
+                  onNavigate: () {
+                    /// navigation logic later
+                  },
+                );
               },
             );
+          }
+
+          if (state is HistoryInitial) {
+            return const Center(child: CircularProgressIndicator());
           }
 
           return const Center(child: Text("No history yet"));

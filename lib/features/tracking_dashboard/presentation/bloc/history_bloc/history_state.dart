@@ -5,7 +5,13 @@ abstract class HistoryState {}
 class HistoryInitial extends HistoryState {}
 
 class HistoryLoaded extends HistoryState {
-  final List<LocationModel> history;
+  final List<LocationModel> locations;
 
-  HistoryLoaded(this.history);
+  HistoryLoaded(this.locations);
+}
+
+class HistoryError extends HistoryState {
+  final String message;
+
+  HistoryError(this.message);
 }
