@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:guardian_route/features/tracking_dashboard/data/data_sources/locationtracking_datasource.dart';
 import 'package:guardian_route/features/tracking_dashboard/domain/usecases/check_tracking_status.dart';
 import 'package:guardian_route/features/tracking_dashboard/domain/usecases/tracking_status_stream.dart';
 import '../../../domain/usecases/start_tracking.dart';
@@ -14,6 +15,7 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
   final StopTracking stopTracking;
   final CheckTrackingStatus checkTrackingStatus;
   final TrackingStatusStream trackingStatusStream;
+  final LocationTrackingDataSource dataSource;
   StreamSubscription? _trackingSubscription;
 
   LocationBloc({
@@ -21,6 +23,7 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     required this.stopTracking,
     required this.checkTrackingStatus,
     required this.trackingStatusStream,
+    required this.dataSource,
   }) : super(LocationInitial()) {
     on<StartTrackingEvent>(_onStartTracking, transformer: droppable());
     on<StopTrackingEvent>(_onStopTracking, transformer: droppable());
@@ -84,6 +87,7 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
   @override
   Future<void> close() {
     _trackingSubscription?.cancel();
+    dataSource.dispose();
     return super.close();
   }
 }

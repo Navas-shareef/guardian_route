@@ -18,6 +18,7 @@ Future init() async {
       stopTracking: sl(),
       checkTrackingStatus: sl(),
       trackingStatusStream: sl(),
+      dataSource: sl(),
     ),
   );
 
