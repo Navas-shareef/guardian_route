@@ -22,7 +22,6 @@ class LocationPermissionService {
     if (!serviceEnabled) {
       return LocationPermissionResult.serviceDisabled;
     }
-
     // Step 2: Check current permission
     LocationPermission permission = await Geolocator.checkPermission();
 

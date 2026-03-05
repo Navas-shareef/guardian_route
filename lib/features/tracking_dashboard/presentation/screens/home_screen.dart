@@ -2,13 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:guardian_route/core/services/location_permission_service.dart';
-import 'package:guardian_route/core/services/notification_service.dart';
 import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/location_tracking_bloc/location_bloc.dart';
 import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/location_tracking_bloc/location_event.dart';
 import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/location_tracking_bloc/location_state.dart';
 import 'package:guardian_route/routes/app_router.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +19,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final LocationPermissionService _permissionService =
       LocationPermissionService();
+
+  LocationPermissionResult? locationPermission;
 
   @override
   void initState() {
@@ -38,47 +39,86 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.resumed &&
+        [
+          LocationPermissionResult.serviceDisabled,
+          LocationPermissionResult.deniedForever,
+          LocationPermissionResult.backgroundDenied,
+        ].contains(locationPermission)) {
       _checkPermissionAfterSettings();
     }
   }
 
+  // function to check the permisstion status after opening settings
   Future<void> _checkPermissionAfterSettings() async {
     final result = await _permissionService.requestPermission();
-
     if (result == LocationPermissionResult.granted) {
-      _showMessage("Location permission granted");
-    } else if (result == LocationPermissionResult.deniedForever) {
-      _showMessage("Please enable permission from settings");
+      // if permission granted,rest of the app flow will work
+      locationPermission = result;
+    } else if (result == LocationPermissionResult.deniedForever &&
+        locationPermission == LocationPermissionResult.deniedForever) {
+      // if the location permission still is in denied state, app will exit
       exit(0);
+    } else if (result == LocationPermissionResult.serviceDisabled) {
+      // if the gps is still not enabled after openign settings, app will exit
+      exit(0);
+    } else if ([
+      LocationPermissionResult.deniedForever,
+      LocationPermissionResult.backgroundDenied,
+      LocationPermissionResult.denied,
+    ].contains(result)) {
+      /// if app location permission is not enabled after gps enabled from settings,app will prompt
+      /// to enable location access
+      _requestPermission();
     }
   }
 
+  /// function to check initial gps,and location permission
   Future<void> _requestPermission() async {
     final result = await _permissionService.requestPermission();
-
     switch (result) {
-      case LocationPermissionResult.granted:
-        break;
-
       case LocationPermissionResult.serviceDisabled:
-        _showMessage("Please enable GPS");
+        _showGpsDialog();
         break;
-
       case LocationPermissionResult.denied:
         _showMessage("Location permission denied");
         await Future.delayed(Duration(seconds: 1));
         exit(0);
-
       case LocationPermissionResult.deniedForever:
-        _showPermissionDialog();
+        _showLocationPermissionDialog();
         break;
       case LocationPermissionResult.backgroundDenied:
+        _showLocationPermissionDialog();
+        break;
+      case LocationPermissionResult.granted:
         break;
     }
   }
 
-  void _showPermissionDialog() {
+  void _showGpsDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text("Enable GPS"),
+        content: const Text(
+          "Guardian Route requires GPS to track your location. Please enable GPS.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              locationPermission = LocationPermissionResult.serviceDisabled;
+              await Geolocator.openLocationSettings();
+            },
+            child: const Text("Open Settings"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLocationPermissionDialog() {
     showDialog(
       barrierDismissible: false,
       context: context,
@@ -99,6 +139,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             onPressed: () async {
               Navigator.pop(context);
               await _permissionService.openSettings();
+              locationPermission = LocationPermissionResult.deniedForever;
             },
             child: const Text("Open Settings"),
           ),
