@@ -17,18 +17,28 @@ const LocationModelSchema = CollectionSchema(
   name: r'LocationModel',
   id: 5574495368489612639,
   properties: {
-    r'latitude': PropertySchema(
+    r'errorMessage': PropertySchema(
       id: 0,
+      name: r'errorMessage',
+      type: IsarType.string,
+    ),
+    r'latitude': PropertySchema(
+      id: 1,
       name: r'latitude',
       type: IsarType.double,
     ),
     r'longitude': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'longitude',
       type: IsarType.double,
     ),
+    r'status': PropertySchema(
+      id: 3,
+      name: r'status',
+      type: IsarType.string,
+    ),
     r'timestamp': PropertySchema(
-      id: 2,
+      id: 4,
       name: r'timestamp',
       type: IsarType.dateTime,
     )
@@ -53,6 +63,18 @@ int _locationModelEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  {
+    final value = object.errorMessage;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.status;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -62,9 +84,11 @@ void _locationModelSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDouble(offsets[0], object.latitude);
-  writer.writeDouble(offsets[1], object.longitude);
-  writer.writeDateTime(offsets[2], object.timestamp);
+  writer.writeString(offsets[0], object.errorMessage);
+  writer.writeDouble(offsets[1], object.latitude);
+  writer.writeDouble(offsets[2], object.longitude);
+  writer.writeString(offsets[3], object.status);
+  writer.writeDateTime(offsets[4], object.timestamp);
 }
 
 LocationModel _locationModelDeserialize(
@@ -74,9 +98,11 @@ LocationModel _locationModelDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = LocationModel(
-    latitude: reader.readDouble(offsets[0]),
-    longitude: reader.readDouble(offsets[1]),
-    timestamp: reader.readDateTime(offsets[2]),
+    errorMessage: reader.readStringOrNull(offsets[0]),
+    latitude: reader.readDoubleOrNull(offsets[1]),
+    longitude: reader.readDoubleOrNull(offsets[2]),
+    status: reader.readStringOrNull(offsets[3]),
+    timestamp: reader.readDateTime(offsets[4]),
   );
   object.id = id;
   return object;
@@ -90,10 +116,14 @@ P _locationModelDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readDoubleOrNull(offset)) as P;
     case 2:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 3:
+      return (reader.readStringOrNull(offset)) as P;
+    case 4:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -196,6 +226,160 @@ extension LocationModelQueryWhere
 
 extension LocationModelQueryFilter
     on QueryBuilder<LocationModel, LocationModel, QFilterCondition> {
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      errorMessageIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'errorMessage',
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      errorMessageIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'errorMessage',
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      errorMessageEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'errorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      errorMessageGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'errorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      errorMessageLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'errorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      errorMessageBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'errorMessage',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      errorMessageStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'errorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      errorMessageEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'errorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      errorMessageContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'errorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      errorMessageMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'errorMessage',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      errorMessageIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'errorMessage',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      errorMessageIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'errorMessage',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
@@ -251,8 +435,26 @@ extension LocationModelQueryFilter
   }
 
   QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      latitudeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'latitude',
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      latitudeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'latitude',
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
       latitudeEqualTo(
-    double value, {
+    double? value, {
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -266,7 +468,7 @@ extension LocationModelQueryFilter
 
   QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
       latitudeGreaterThan(
-    double value, {
+    double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
@@ -282,7 +484,7 @@ extension LocationModelQueryFilter
 
   QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
       latitudeLessThan(
-    double value, {
+    double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
@@ -298,8 +500,8 @@ extension LocationModelQueryFilter
 
   QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
       latitudeBetween(
-    double lower,
-    double upper, {
+    double? lower,
+    double? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     double epsilon = Query.epsilon,
@@ -317,8 +519,26 @@ extension LocationModelQueryFilter
   }
 
   QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      longitudeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'longitude',
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      longitudeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'longitude',
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
       longitudeEqualTo(
-    double value, {
+    double? value, {
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -332,7 +552,7 @@ extension LocationModelQueryFilter
 
   QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
       longitudeGreaterThan(
-    double value, {
+    double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
@@ -348,7 +568,7 @@ extension LocationModelQueryFilter
 
   QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
       longitudeLessThan(
-    double value, {
+    double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
@@ -364,8 +584,8 @@ extension LocationModelQueryFilter
 
   QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
       longitudeBetween(
-    double lower,
-    double upper, {
+    double? lower,
+    double? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     double epsilon = Query.epsilon,
@@ -378,6 +598,160 @@ extension LocationModelQueryFilter
         upper: upper,
         includeUpper: includeUpper,
         epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      statusIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'status',
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      statusIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'status',
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      statusEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'status',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      statusGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'status',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      statusLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'status',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      statusBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'status',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      statusStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'status',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      statusEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'status',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      statusContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'status',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      statusMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'status',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      statusIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'status',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterFilterCondition>
+      statusIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'status',
+        value: '',
       ));
     });
   }
@@ -447,6 +821,20 @@ extension LocationModelQueryLinks
 
 extension LocationModelQuerySortBy
     on QueryBuilder<LocationModel, LocationModel, QSortBy> {
+  QueryBuilder<LocationModel, LocationModel, QAfterSortBy>
+      sortByErrorMessage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'errorMessage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterSortBy>
+      sortByErrorMessageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'errorMessage', Sort.desc);
+    });
+  }
+
   QueryBuilder<LocationModel, LocationModel, QAfterSortBy> sortByLatitude() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'latitude', Sort.asc);
@@ -473,6 +861,18 @@ extension LocationModelQuerySortBy
     });
   }
 
+  QueryBuilder<LocationModel, LocationModel, QAfterSortBy> sortByStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'status', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterSortBy> sortByStatusDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'status', Sort.desc);
+    });
+  }
+
   QueryBuilder<LocationModel, LocationModel, QAfterSortBy> sortByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.asc);
@@ -489,6 +889,20 @@ extension LocationModelQuerySortBy
 
 extension LocationModelQuerySortThenBy
     on QueryBuilder<LocationModel, LocationModel, QSortThenBy> {
+  QueryBuilder<LocationModel, LocationModel, QAfterSortBy>
+      thenByErrorMessage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'errorMessage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterSortBy>
+      thenByErrorMessageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'errorMessage', Sort.desc);
+    });
+  }
+
   QueryBuilder<LocationModel, LocationModel, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -527,6 +941,18 @@ extension LocationModelQuerySortThenBy
     });
   }
 
+  QueryBuilder<LocationModel, LocationModel, QAfterSortBy> thenByStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'status', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QAfterSortBy> thenByStatusDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'status', Sort.desc);
+    });
+  }
+
   QueryBuilder<LocationModel, LocationModel, QAfterSortBy> thenByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.asc);
@@ -543,6 +969,13 @@ extension LocationModelQuerySortThenBy
 
 extension LocationModelQueryWhereDistinct
     on QueryBuilder<LocationModel, LocationModel, QDistinct> {
+  QueryBuilder<LocationModel, LocationModel, QDistinct> distinctByErrorMessage(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'errorMessage', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<LocationModel, LocationModel, QDistinct> distinctByLatitude() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'latitude');
@@ -552,6 +985,13 @@ extension LocationModelQueryWhereDistinct
   QueryBuilder<LocationModel, LocationModel, QDistinct> distinctByLongitude() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'longitude');
+    });
+  }
+
+  QueryBuilder<LocationModel, LocationModel, QDistinct> distinctByStatus(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'status', caseSensitive: caseSensitive);
     });
   }
 
@@ -570,15 +1010,28 @@ extension LocationModelQueryProperty
     });
   }
 
-  QueryBuilder<LocationModel, double, QQueryOperations> latitudeProperty() {
+  QueryBuilder<LocationModel, String?, QQueryOperations>
+      errorMessageProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'errorMessage');
+    });
+  }
+
+  QueryBuilder<LocationModel, double?, QQueryOperations> latitudeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'latitude');
     });
   }
 
-  QueryBuilder<LocationModel, double, QQueryOperations> longitudeProperty() {
+  QueryBuilder<LocationModel, double?, QQueryOperations> longitudeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'longitude');
+    });
+  }
+
+  QueryBuilder<LocationModel, String?, QQueryOperations> statusProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'status');
     });
   }
 

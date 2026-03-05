@@ -41,14 +41,14 @@ dependencies:
   flutter_background_service: ^5.1.0
   equatable: ^2.0.8
   flutter_local_notifications: ^20.1.0
-  isar: ^3.1.0
-  isar_flutter_libs: ^3.1.0
+  isar: ^3.1.0+1
   path_provider: ^2.1.5
+  isar_flutter_libs: ^3.1.0+1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  isar_generator: ^3.1.0
+  isar_generator: ^3.1.0+1
   build_runner: ^2.4.8
 
   # The "flutter_lints" package below contains a set of recommended lints to

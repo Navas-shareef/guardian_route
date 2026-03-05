@@ -36,6 +36,7 @@ class LocationBackgroundService {
   static void onStart(ServiceInstance service) async {
     DartPluginRegistrant.ensureInitialized();
     await IsarService.init();
+    await NotificationService.initialize();
     debugPrint("Background service started");
     await NotificationService.updateTrackingNotification(
       0,

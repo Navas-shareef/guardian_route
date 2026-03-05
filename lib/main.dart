@@ -28,8 +28,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await IsarService.init();
   await BackgroundServiceInitializer.initialize();
+  await NotificationService.requestNotificationPermission();
   await NotificationService.initialize();
-
   runApp(const MyApp());
 }
 

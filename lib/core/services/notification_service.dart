@@ -6,7 +6,7 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
-    'tracking_channel',
+    'guardian_route',
     'Tracking Service',
     description: 'Location tracking notification',
     importance: Importance.low,
@@ -51,13 +51,14 @@ class NotificationService {
     bool isFirstNotification = false,
   }) async {
     const androidDetails = AndroidNotificationDetails(
-      'tracking_channel',
+      'guardian_route',
       'Tracking Service',
       channelDescription: 'Location tracking notification',
       importance: Importance.low,
       priority: Priority.low,
       ongoing: true,
       autoCancel: false,
+
       actions: [AndroidNotificationAction('STOP_TRACKING', 'Stop Tracking')],
     );
 
@@ -79,5 +80,15 @@ class NotificationService {
           : "Lat: $lat , Lng: $lng",
       notificationDetails: notificationDetails,
     );
+  }
+
+  @pragma('vm:entry-point')
+  static Future<void> requestNotificationPermission() async {
+    final androidImplementation = _notifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+
+    await androidImplementation?.requestNotificationsPermission();
   }
 }
