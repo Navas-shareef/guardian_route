@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:guardian_route/core/services/notification_service.dart';
 
 class BackgroundServiceInitializer {
   static Future<void> initialize() async {
@@ -30,9 +31,16 @@ class BackgroundServiceInitializer {
 @pragma('vm:entry-point')
 class LocationBackgroundService {
   @pragma('vm:entry-point')
-  static void onStart(ServiceInstance service) {
+  static void onStart(ServiceInstance service) async {
     DartPluginRegistrant.ensureInitialized();
+    await NotificationService.initialize();
+
     debugPrint("Background service started");
+    await NotificationService.updateTrackingNotification(
+      0,
+      0,
+      isFirstNotification: true,
+    );
     service.invoke("serviceReady");
 
     service.on("stopService").listen((event) async {
@@ -42,7 +50,7 @@ class LocationBackgroundService {
       service.stopSelf();
     });
 
-    Timer.periodic(const Duration(seconds: 3), (timer) async {
+    Timer.periodic(const Duration(seconds: 2), (timer) async {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
       if (!serviceEnabled) return;
@@ -64,6 +72,11 @@ class LocationBackgroundService {
         "time": DateTime.now().toIso8601String(),
       });
 
+      await NotificationService.updateTrackingNotification(
+        position.latitude,
+        position.longitude,
+        isFirstNotification: false,
+      );
       // TODO: Save location in DB
     });
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:guardian_route/core/services/background_service_intializer.dart';
+import 'package:guardian_route/core/services/notification_service.dart';
 import 'package:guardian_route/core/theme/app_theme.dart';
 import 'package:guardian_route/features/tracking_dashboard/data/data_sources/locationtracking_datasource.dart';
 import 'package:guardian_route/features/tracking_dashboard/data/repositories/location_repo_imp.dart';
@@ -14,9 +15,16 @@ import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/loc
 import 'package:guardian_route/features/tracking_dashboard/presentation/bloc/location_tracking_bloc/location_event.dart';
 import 'package:guardian_route/routes/app_router.dart';
 
+/// Create single instances
+final dataSource = LocationTrackingDataSourceImpl();
+final repository = LocationRepositoryImpl(locationTrackingService: dataSource);
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await BackgroundServiceInitializer.initialize();
+  await NotificationService.initialize();
+
   runApp(const MyApp());
 }
 
@@ -25,29 +33,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dataSource = LocationTrackingDataSourceImpl();
-    final repository = LocationRepositoryImpl(
-      locationTrackingService: dataSource,
-    );
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) {
-            return LocationBloc(
-              startTracking: StartTracking(repository),
-              stopTracking: StopTracking(repository),
-              checkTrackingStatus: CheckTrackingStatus(repository),
-              trackingStatusStream: TrackingStatusStream(repository),
-            )..add(CheckTrackingStatusEvent());
-          },
+          create: (_) => LocationBloc(
+            startTracking: StartTracking(repository),
+            stopTracking: StopTracking(repository),
+            checkTrackingStatus: CheckTrackingStatus(repository),
+            trackingStatusStream: TrackingStatusStream(repository),
+          )..add(CheckTrackingStatusEvent()),
         ),
+
         BlocProvider(
-          create: (_) {
-            return HistoryBloc(LocationUpdatesStream(repository));
-          },
+          create: (_) => HistoryBloc(LocationUpdatesStream(repository)),
+          lazy: false,
         ),
       ],
-
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Guardian Route',
