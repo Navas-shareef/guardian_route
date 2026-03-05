@@ -46,7 +46,7 @@ class LocationBackgroundService {
       service.stopSelf();
     });
     final localDataSource = LocationLocalDataSourceImpl();
-    Timer.periodic(const Duration(minutes: 1), (timer) async {
+    Timer.periodic(const Duration(minutes: 5), (timer) async {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
       if (!serviceEnabled) {
