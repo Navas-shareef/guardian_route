@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final LocationPermissionService _permissionService =
       LocationPermissionService();
 
-  LocationPermissionResult? locationPermission;
+  LocationPermissionResult? currentLocationPermission;
 
   @override
   void initState() {
@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           LocationPermissionResult.serviceDisabled,
           LocationPermissionResult.deniedForever,
           LocationPermissionResult.backgroundDenied,
-        ].contains(locationPermission)) {
+        ].contains(currentLocationPermission)) {
       _checkPermissionAfterSettings();
     }
   }
@@ -54,22 +54,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final result = await _permissionService.requestPermission();
     if (result == LocationPermissionResult.granted) {
       // if permission granted,rest of the app flow will work
-      locationPermission = result;
-    } else if (result == LocationPermissionResult.deniedForever &&
-        locationPermission == LocationPermissionResult.deniedForever) {
-      // if the location permission still is in denied state, app will exit
-      exit(0);
-    } else if (result == LocationPermissionResult.serviceDisabled) {
-      // if the gps is still not enabled after openign settings, app will exit
-      exit(0);
+      currentLocationPermission = result;
     } else if ([
       LocationPermissionResult.deniedForever,
-      LocationPermissionResult.backgroundDenied,
+      LocationPermissionResult.serviceDisabled,
       LocationPermissionResult.denied,
     ].contains(result)) {
-      /// if app location permission is not enabled after gps enabled from settings,app will prompt
-      /// to enable location access
-      _requestPermission();
+      exit(0);
     }
   }
 
@@ -81,14 +72,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _showGpsDialog();
         break;
       case LocationPermissionResult.denied:
-        _showMessage("Location permission denied");
-        await Future.delayed(Duration(seconds: 1));
         exit(0);
       case LocationPermissionResult.deniedForever:
         _showLocationPermissionDialog();
         break;
       case LocationPermissionResult.backgroundDenied:
-        _showLocationPermissionDialog();
+        // _showLocationPermissionDialog();
         break;
       case LocationPermissionResult.granted:
         break;
@@ -99,21 +88,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text("Enable GPS"),
-        content: const Text(
-          "Guardian Route requires GPS to track your location. Please enable GPS.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              locationPermission = LocationPermissionResult.serviceDisabled;
-              await Geolocator.openLocationSettings();
-            },
-            child: const Text("Open Settings"),
+      builder: (_) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          title: const Text("Enable GPS"),
+          content: const Text(
+            "Guardian Route requires GPS to track your location. Please enable GPS.",
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                currentLocationPermission =
+                    LocationPermissionResult.serviceDisabled;
+                await Geolocator.openLocationSettings();
+              },
+              child: const Text("Open Settings"),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -122,28 +115,32 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Location Permission Required"),
-        content: const Text(
-          "Location access is permanently denied. Please enable it from app settings to use tracking.",
+      builder: (_) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          title: const Text("Location Permission Required"),
+          content: const Text(
+            "Location access is permanently denied. Please enable it from app settings to use tracking.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                exit(0);
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _permissionService.openSettings();
+                currentLocationPermission =
+                    LocationPermissionResult.deniedForever;
+              },
+              child: const Text("Open Settings"),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              exit(0);
-            },
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _permissionService.openSettings();
-              locationPermission = LocationPermissionResult.deniedForever;
-            },
-            child: const Text("Open Settings"),
-          ),
-        ],
       ),
     );
   }
